@@ -53,7 +53,7 @@ pipeline {
                         ${AZ_CLI_PATH} account set --subscription ${AZURE_SUBSCRIPTION_ID}
                         """
 
-                        // Prepare deployment directory and ZIP
+                        // Prepare deployment directory and ZIP (now with full path!)
                         bat """
                         if exist deploy rmdir /s /q deploy
                         mkdir deploy\\src
@@ -61,7 +61,7 @@ pipeline {
                         copy PROG8860-S25-CICD-assignment-3\\package.json deploy\\
                         xcopy PROG8860-S25-CICD-assignment-3\\src deploy\\src /s /e /i /y
                         cd deploy && npm install --omit=dev && cd ..
-                        powershell.exe -ExecutionPolicy Bypass -Command "Compress-Archive -Path deploy\\* -DestinationPath deployment.zip -Force"
+                        powershell.exe -ExecutionPolicy Bypass -Command "Compress-Archive -Path deploy\\* -DestinationPath ${WORKSPACE}\\deployment.zip -Force"
                         """
 
                         // Deploy to Azure Function
@@ -69,7 +69,7 @@ pipeline {
                         ${AZ_CLI_PATH} functionapp deployment source config-zip ^
                             --resource-group ${RESOURCE_GROUP} ^
                             --name ${FUNCTION_APP_NAME} ^
-                            --src deployment.zip
+                            --src ${WORKSPACE}\\deployment.zip
                         """
 
                         echo "🌐 Deployed at: https://${FUNCTION_APP_NAME}.azurewebsites.net/api/HelloWorld"
