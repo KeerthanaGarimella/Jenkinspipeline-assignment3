@@ -16,25 +16,27 @@ pipeline {
         stage('Build') {
             steps {
                 echo '🔧 Building Azure Functions project...'
-                script {
+                dir('PROG8860-S25-CICD-assignment-3') {
                     bat 'if exist node_modules rmdir /s /q node_modules'
                     bat 'npm install'
-                    echo '✅ Build completed successfully'
                 }
+                echo '✅ Build completed successfully'
             }
         }
 
         stage('Test') {
             steps {
                 echo '🧪 Running tests...'
-                script {
-                    try {
-                        bat 'npm test'
-                        echo '✅ All tests passed successfully'
-                    } catch (Exception e) {
-                        echo "❌ Tests failed: ${e.message}"
-                        currentBuild.result = 'FAILURE'
-                        error("Test stage failed")
+                dir('PROG8860-S25-CICD-assignment-3') {
+                    script {
+                        try {
+                            bat 'npm test'
+                            echo '✅ All tests passed successfully'
+                        } catch (Exception e) {
+                            echo "❌ Tests failed: ${e.message}"
+                            currentBuild.result = 'FAILURE'
+                            error("Test stage failed")
+                        }
                     }
                 }
             }
@@ -54,12 +56,11 @@ pipeline {
                         // Prepare deploy folder
                         bat """
                         if exist deploy rmdir /s /q deploy
-                        mkdir deploy
-                        copy host.json deploy\\
-                        copy package.json deploy\\
-                        xcopy src deploy\\src /s /e /i /y
-                        cd deploy && npm install --production
-                        cd ..
+                        mkdir deploy\\src
+                        copy PROG8860-S25-CICD-assignment-3\\host.json deploy\\
+                        copy PROG8860-S25-CICD-assignment-3\\package.json deploy\\
+                        xcopy PROG8860-S25-CICD-assignment-3\\src deploy\\src /s /e /i /y
+                        cd deploy && npm install --omit=dev
                         powershell -Command "Compress-Archive -Path deploy\\* -DestinationPath deployment.zip -Force"
                         """
 
