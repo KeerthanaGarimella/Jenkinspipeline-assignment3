@@ -1,21 +1,20 @@
 pipeline {
     agent any
-    
+
     environment {
         AZURE_SUBSCRIPTION_ID = credentials('azure-subscription-id')
-        AZURE_TENANT_ID = credentials('azure-tenant-id')
-        AZURE_CLIENT_ID = credentials('azure-client-id')
-        AZURE_CLIENT_SECRET = credentials('azure-client-secret')
-        RESOURCE_GROUP = 'my-azure-functiondemo_group-b294'
-        FUNCTION_APP_NAME = 'my-azure-functiondemo'
-        AZURE_REGION = 'canada central'
+        AZURE_TENANT_ID       = credentials('azure-tenant-id')
+        AZURE_CLIENT_ID       = credentials('azure-client-id')
+        AZURE_CLIENT_SECRET   = credentials('azure-client-secret')
+        RESOURCE_GROUP        = 'my-azure-functiondemo_group-b294'
+        FUNCTION_APP_NAME     = 'my-azure-functiondemo'
+        AZURE_REGION          = 'canada central'
     }
-    
+
     stages {
         stage('Build') {
             steps {
                 echo '🔧 Building Azure Functions project...'
-                
                 script {
                     bat 'if exist node_modules rmdir /s /q node_modules'
                     bat 'npm install'
@@ -23,11 +22,10 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Test') {
             steps {
                 echo '🧪 Running tests...'
-                
                 script {
                     try {
                         bat 'npm test'
@@ -41,13 +39,47 @@ pipeline {
             }
         }
 
-        // keep deploy stage for now, but az CLI might also need to run via PowerShell
+        stage('Deploy') {
+            steps {
+                echo '🚀 Deploying Azure Function to Azure...'
+
+                script {
+                    // Login to Azure
+                    bat '''
+                    az login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%
+                    az account set --subscription %AZURE_SUBSCRIPTION_ID%
+                    '''
+
+                    // Prepare deployment package
+                    bat 'if exist deploy rmdir /s /q deploy'
+                    bat 'mkdir deploy'
+                    bat 'copy host.json deploy\\'
+                    bat 'xcopy src\\functions deploy\\functions /s /e /i /y'
+                    bat 'powershell Compress-Archive -Path deploy\\* -DestinationPath deployment.zip -Force'
+
+                    // Deploy using zip
+                    bat '''
+                    az functionapp deployment source config-zip ^
+                        --resource-group %RESOURCE_GROUP% ^
+                        --name %FUNCTION_APP_NAME% ^
+                        --src deployment.zip
+                    '''
+
+                    // Output function app URL
+                    bat '''
+                    echo "🌐 Function App deployed successfully!"
+                    FOR /F "tokens=* USEBACKQ" %%F IN (`az functionapp show --name %FUNCTION_APP_NAME% --resource-group %RESOURCE_GROUP% --query defaultHostName -o tsv`) DO (
+                        echo 🌐 Your function is live at: https://%%F/api/HelloWorld
+                    )
+                    '''
+                }
+            }
+        }
     }
-    
+
     post {
         always {
             echo '🧹 Cleaning up workspace...'
-            
             script {
                 bat 'if exist deployment.zip del /f /q deployment.zip'
                 bat 'if exist deploy rmdir /s /q deploy'
