@@ -40,44 +40,69 @@ pipeline {
         }
 
         stage('Deploy') {
-    steps {
-        echo '🚀 Deploying to Azure Functions...'
-        script {
-            try {
-                // Login to Azure using service principal
-                bat '''
-                az login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%
-                az account set --subscription %AZURE_SUBSCRIPTION_ID%
-                '''
+            steps {
+                echo '🚀 Deploying to Azure Functions...'
+                script {
+                    try {
+                        // Login to Azure using service principal
+                        bat '''
+                        az login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%
+                        az account set --subscription %AZURE_SUBSCRIPTION_ID%
+                        '''
 
-                // Create deployment folder and zip
-                bat '''
-                if exist deploy rmdir /s /q deploy
-                mkdir deploy
-                copy host.json deploy\\
-                copy package.json deploy\\
-                xcopy src deploy\\src /s /e /i /y
-                cd deploy && npm install --production
-                powershell Compress-Archive -Path deploy\\* -DestinationPath deployment.zip -Force
-                '''
+                        // Create deployment folder and zip
+                        bat '''
+                        if exist deploy rmdir /s /q deploy
+                        mkdir deploy
+                        copy host.json deploy\\
+                        copy package.json deploy\\
+                        xcopy src deploy\\src /s /e /i /y
+                        cd deploy && npm install --production
+                        powershell Compress-Archive -Path deploy\\* -DestinationPath deployment.zip -Force
+                        '''
 
-                // Deploy to Azure
-                bat '''
-                az functionapp deployment source config-zip ^
-                    --resource-group %RESOURCE_GROUP% ^
-                    --name %FUNCTION_APP_NAME% ^
-                    --src deployment.zip
-                '''
+                        // Deploy to Azure
+                        bat '''
+                        az functionapp deployment source config-zip ^
+                            --resource-group %RESOURCE_GROUP% ^
+                            --name %FUNCTION_APP_NAME% ^
+                            --src deployment.zip
+                        '''
 
-                echo "🌐 Function deployed to: https://%FUNCTION_APP_NAME%.azurewebsites.net/api/HelloWorld"
+                        echo "🌐 Function deployed to: https://%FUNCTION_APP_NAME%.azurewebsites.net/api/HelloWorld"
 
-            } catch (Exception e) {
-                echo "❌ Deployment failed: ${e.message}"
-                currentBuild.result = 'FAILURE'
-                error("Deploy stage failed")
-            } finally {
-                bat 'az logout || echo Already logged out'
+                    } catch (Exception e) {
+                        echo "❌ Deployment failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                        error("Deploy stage failed")
+                    } finally {
+                        bat 'az logout || echo Already logged out'
+                    }
+                }
             }
+        }
+    }
+
+    post {
+        always {
+            echo '🧹 Cleaning up workspace...'
+            script {
+                bat 'if exist deployment.zip del /f /q deployment.zip'
+                bat 'if exist deploy rmdir /s /q deploy'
+            }
+        }
+
+        success {
+            echo '🎉 Pipeline completed successfully!'
+            echo "✅ Build: Successful"
+            echo "✅ Test: All tests passed"
+            echo "✅ Deploy: Function deployed to Azure"
+            echo "🌐 Access your function at: https://${FUNCTION_APP_NAME}.azurewebsites.net/api/HelloWorld"
+        }
+
+        failure {
+            echo '💥 Pipeline failed!'
+            echo "❌ Check the logs above for details"
         }
     }
 }
