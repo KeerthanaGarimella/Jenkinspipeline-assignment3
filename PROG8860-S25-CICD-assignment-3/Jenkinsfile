@@ -47,30 +47,31 @@ pipeline {
                 echo '🚀 Deploying to Azure Functions...'
                 script {
                     try {
-                        // Login to Azure
                         bat """
-                        ${AZ_CLI_PATH} login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID}
-                        ${AZ_CLI_PATH} account set --subscription ${AZURE_SUBSCRIPTION_ID}
-                        """
+%AZ_CLI_PATH% login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%
+%AZ_CLI_PATH% account set --subscription %AZURE_SUBSCRIPTION_ID%
+"""
 
-                        // Prepare deployment directory and ZIP (now with full path!)
-                        bat """
-                        if exist deploy rmdir /s /q deploy
-                        mkdir deploy\\src
-                        copy PROG8860-S25-CICD-assignment-3\\host.json deploy\\
-                        copy PROG8860-S25-CICD-assignment-3\\package.json deploy\\
-                        xcopy PROG8860-S25-CICD-assignment-3\\src deploy\\src /s /e /i /y
-                        cd deploy && npm install --omit=dev && cd ..
-                        powershell.exe -ExecutionPolicy Bypass -Command "Compress-Archive -Path deploy\\* -DestinationPath ${WORKSPACE}\\deployment.zip -Force"
-                        """
+                        bat '''
+if exist deploy rmdir /s /q deploy
+mkdir deploy\\src
+copy PROG8860-S25-CICD-assignment-3\\host.json deploy\\
+copy PROG8860-S25-CICD-assignment-3\\package.json deploy\\
+xcopy PROG8860-S25-CICD-assignment-3\\src deploy\\src /s /e /i /y
+cd deploy && npm install --omit=dev && cd ..
+'''
 
-                        // Deploy to Azure Function
-                        bat """
-                        ${AZ_CLI_PATH} functionapp deployment source config-zip ^
-                            --resource-group ${RESOURCE_GROUP} ^
-                            --name ${FUNCTION_APP_NAME} ^
-                            --src ${WORKSPACE}\\deployment.zip
-                        """
+                        bat '''
+powershell -Command "Compress-Archive -Path \\"deploy\\\\*\\" -DestinationPath \\"deployment.zip\\" -Force"
+'''
+
+                        bat '''
+set ZIP_PATH=%CD%\\deployment.zip
+%AZ_CLI_PATH% functionapp deployment source config-zip ^
+  --resource-group %RESOURCE_GROUP% ^
+  --name %FUNCTION_APP_NAME% ^
+  --src "%ZIP_PATH%"
+'''
 
                         echo "🌐 Deployed at: https://${FUNCTION_APP_NAME}.azurewebsites.net/api/HelloWorld"
 
@@ -79,7 +80,9 @@ pipeline {
                         currentBuild.result = 'FAILURE'
                         error("Deploy stage failed")
                     } finally {
-                        bat "${AZ_CLI_PATH} logout || echo Already logged out"
+                        bat '''
+%AZ_CLI_PATH% logout || echo Already logged out
+'''
                     }
                 }
             }
