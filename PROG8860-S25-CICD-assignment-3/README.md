@@ -1,198 +1,161 @@
-PROG8860 Assignment 3 - Jenkins CI/CD Pipeline for Azure Functions
+# PROG8860 Assignment 3 - Jenkins CI/CD Pipeline for Azure Functions
 
-Student Name: Prem Chander J
-Student ID: 9015480
-Course: PROG8860-S25-CICD
-Assignment: Assignment 3 - Jenkins CI/CD Pipeline for Azure Function
+**Student Name**: Keerthana Garimella  
+**Student ID**: 8985513  
+**Course**: PROG8860-S25-CICD  
+**Assignment**: Assignment 3 - Jenkins CI/CD Pipeline for Azure Function
 
-📋 Project Overview
+---
+
+## 📋 Project Overview
 
 This project demonstrates a complete Jenkins CI/CD pipeline that automatically builds, tests, and deploys an Azure Functions application. The pipeline integrates with GitHub for source code management and deploys to Microsoft Azure.
 
-🎯 Assignment Objectives Met
-✅ Build, Test, and Deploy stages functioning correctly
+---
 
-✅ At least 3 comprehensive test cases (6 test cases implemented)
+## 🎯 Assignment Objectives Met
 
-✅ Azure Functions integration
+✅ Build, Test, and Deploy stages functioning correctly  
+✅ At least 3 comprehensive test cases 
+✅ Azure Functions integration  
+✅ Automated CI/CD pipeline with Jenkins  
+✅ GitHub repository integration  
 
-✅ Automated CI/CD pipeline with Jenkins
+---
 
-✅ GitHub repository integration
-
-🏗️ Architecture Overview
+## 🏗️ Architecture Overview
 
 GitHub Repository → Jenkins Pipeline → Azure Functions  
-     ↓                    ↓                 ↓  
-Source Code         Build → Test →      Deployed  
-Management           Deploy Stages      Application  
-💻 Technology Stack
-Runtime: Node.js 18
+↓                            ↓                        ↓  
+Source Code         Build → Test →    Deployed  
+Management           Deploy Stages   Application
 
-Cloud Platform: Microsoft Azure Functions v4
+---
 
-CI/CD Tool: Jenkins
+## 💻 Technology Stack
 
-Testing Framework: Jest
+- **Runtime**: Node.js 18  
+- **Cloud Platform**: Microsoft Azure Functions v4  
+- **CI/CD Tool**: Jenkins  
+- **Testing Framework**: Jest  
+- **Source Control**: GitHub  
+- **Authentication**: Azure Service Principal  
 
-Source Control: GitHub
+---
 
-Authentication: Azure Service Principal
+## 🚀 Azure Function Details
 
-🚀 Azure Function Details
-Function Specifications
-Function Name: HelloWorld
+### Function Specifications
+- **Function Name**: HelloWorld  
+- **HTTP Methods**: GET, POST  
+- **Authentication**: Anonymous  
+- **Runtime**: Node.js 18  
+- **Azure Functions Version**: v4 (Latest)
 
-HTTP Methods: GET, POST
+### Azure Resources
+- **Resource Group**: my-azure-functiondemo_group-b294  
+- **Function App**: my-azure-functiondemo  
+- **Region**: Central Canada
 
-Authentication: Anonymous
+### Function Endpoints
+- **Base URL**:  
+  `https://my-azure-functiondemo.azurewebsites.net/api/HelloWorld`
 
-Runtime: Node.js 18
+- **With Parameter**:  
+  `https://my-azure-functiondemo.azurewebsites.net/api/HelloWorld?name=YourName`
 
-Azure Functions Version: v4 (Latest)
+---
 
-Azure Resources
+## 🧪 Testing Strategy
 
-Resource Group: premfunc8860_group
+### Test Coverage
+The application includes comprehensive test cases covering:
 
-Function App: premfunc8860
+- Basic Functionality Test – Validates default "Hello, World!" response  
+- HTTP Response Validation – Ensures successful response structure  
+- Query Parameter Handling – Tests custom name parameter functionality  
+- Edge Case Testing – Handles empty name parameters  
+- Logging Verification – Confirms proper request logging  
+- Multiple Name Scenarios – Tests various input combinations
 
-Region: Central Canada
-
-Function Endpoints
-
-Base URL:
-https://premfunc8860-cfabb2c8ege2ftfz.canadacentral-01.azurewebsites.net/api/HelloWorld
-
-With Parameter:
-https://premfunc8860-cfabb2c8ege2ftfz.canadacentral-01.azurewebsites.net/api/HelloWorld?name=YourName
-
-🧪 Testing Strategy
-
-Test Coverage
-The application includes 6 comprehensive test cases covering:
-
-Basic Functionality Test – Validates default "Hello, World!" response
-
-HTTP Response Validation – Ensures successful response structure
-
-Query Parameter Handling – Tests custom name parameter functionality
-
-Edge Case Testing – Handles empty name parameters
-
-Logging Verification – Confirms proper request logging
-
-Multiple Name Scenarios – Tests various input combinations
-
-Test Results
+### Test Results
 
 ✅ Test Suites: 1 passed, 1 total  
 ✅ Tests: 6 passed, 6 total  
-✅ Snapshots: 0 total  
 ⏱️ Time: ~0.8s  
 
-🔄 Jenkins CI/CD Pipeline
+---
 
-Pipeline Stages
+## 🔄 Jenkins CI/CD Pipeline
 
-1. Build Stage 🔧
-Cleans previous build artifacts
+### Pipeline Stages
 
-Installs npm dependencies
+#### 1. Build Stage 🔧
+- Cleans previous build artifacts  
+- Installs npm dependencies  
+- Prepares the application for testing  
 
-Prepares the application for testing
+#### 2. Test Stage 🧪
+- Executes Jest test suite  
+- Validates all test cases  
 
-![alt text](image-4.png)
+#### 3. Deploy Stage 🚀
+- Authenticates with Azure using Service Principal  
+- Packages application  
+- Deploys using ZIP method  
+- Configures app settings  
 
+---
 
-2. Test Stage 🧪
-Executes Jest test suite
+## 🌐 Live Application
 
-Validates all 6 test cases
+### Deployment Verification
 
-Ensures code quality before deployment
-
-![alt text](image-3.png)
-
-
-3. Deploy Stage 🚀
-Authenticates with Azure using Service Principal
-
-Creates/verifies Azure resources
-
-Packages application for deployment
-
-Deploys to Azure Functions using ZIP deployment
-
-Configures app settings
-
-![alt text](image-2.png)
-
-
-Pipeline Features:
-
-Automated Triggers: GitHub webhook integration
-
-Environment Management: Secure credential storage
-
-Error Handling: Comprehensive error catching and reporting
-
-Cleanup: Post-deployment artifact cleanup
-
-Cross-Platform: Works with Linux Jenkins agents
-
-🌐 Live Application
-
-Deployment Verification
 The function is deployed and accessible at:
 
+- `https://my-azure-functiondemo.azurewebsites.net/api/HelloWorld`
 
-Testing the Live Function
+### Testing the Live Function
 
-Basic Request:
+#### Basic Request:
 
-GET https://premfunc8860-cfabb2c8ege2ftfz.canadacentral-01.azurewebsites.net/api/HelloWorld
+```http
+GET https://my-azure-functiondemo.azurewebsites.net/api/HelloWorld
 Response: Hello, World!
+
 With Custom Name:
-
-![alt text](image-1.png)
-
-GET https://premfunc8860-cfabb2c8ege2ftfz.canadacentral-01.azurewebsites.net/api/HelloWorld?name=Prem
-
-Response: Hello, Prem!
-
-![alt text](image.png)
+http
+GET https://my-azure-functiondemo.azurewebsites.net/api/HelloWorld?name=Keerthana
+Response: Hello, Keerthana!
 
 📁 Project Structure
 
 PROG8860-S25-CICD/
 ├── src/
 │   └── functions/
-│       └── HelloWorld.js          # Azure Function implementation
+│       └── HelloWorld.js
 ├── tests/
-│   └── hello-world.test.js        # Jest test suite (6 test cases)
-├── screenshots/                   # Pipeline and deployment screenshots
+│   └── hello-world.test.js
+├── screenshots/
 │   ├── build.png
 │   ├── test.png
 │   ├── deploy.png
 │   └── sample-app.png
-├── Jenkinsfile                    # Jenkins pipeline configuration
-├── package.json                   # Node.js dependencies and scripts
-├── host.json                      # Azure Functions configuration
-├── jest.config.js                 # Jest testing configuration
-└── README.md                      # This documentation
+├── Jenkinsfile
+├── package.json
+├── host.json
+├── jest.config.js
+└── README.md
 
 ⚙️ Setup and Configuration
-
 Prerequisites
-
 Jenkins server with Azure CLI
 
-Azure subscription and service principal
+Azure subscription + Service Principal
 
 GitHub repository access
 
-Node.js 18+ runtime
+Node.js 18+
 
 Jenkins Credentials Required
 azure-subscription-id
@@ -204,9 +167,9 @@ azure-client-id
 azure-client-secret
 
 Local Development
-
+bash
 # Clone repository
-git clone https://github.com/jpremchander/PROG8860-S25-CICD.git
+git clone https://github.com/KeerthanaGarimella/PROG8860-S25-CICD.git
 
 # Install dependencies
 npm install
@@ -214,26 +177,5 @@ npm install
 # Run tests
 npm test
 
-# Run locally (requires Azure Functions Core Tools)
+# Run locally
 func start
-✅ Assignment Requirements Fulfillment
-
-Requirement	Status	Implementation
-
-Build Stage	✅ Complete	Automated npm install and prep steps
-
-Test Stage	✅ Complete	6 comprehensive test cases using Jest
-
-Deploy Stage	✅ Complete	Deploys using Azure CLI and ZIP method
-
-Minimum 3 Tests	✅ Exceeded	Total of 6 test cases implemented
-
-Functioning Pipeline	✅ Complete	End-to-end CI/CD using Jenkins
-
-**********************************************************************
-Student: Prem Chander J
-Student ID: 9015480
-GitHub: jpremchander
-Repository: PROG8860-S25-CICD
-Branch: assignment-3
-
